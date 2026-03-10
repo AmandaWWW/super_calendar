@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-base: 6 10 20;
+  --color-surface: 14 20 36;
+  --color-panel: 18 24 44;
+  --color-ink: 237 242 255;
+  --color-muted: 151 165 192;
+  --color-neon: 110 255 193;
+  --color-ultraviolet: 145 102 255;
+  --color-cyan: 103 216 255;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply min-h-screen bg-hero-radial text-ink;
+}
+
+* {
+  @apply border-white/10;
+}
+
+@layer components {
+  .shell-frame {
+    @apply relative min-h-screen overflow-hidden;
+  }
+
+  .shell-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(110, 255, 193, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(110, 255, 193, 0.06) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 92%);
+    pointer-events: none;
+  }
+
+  .shell-inner {
+    @apply relative z-10 mx-auto flex max-w-[1820px] flex-col gap-6 px-4 py-6 lg:px-6 xl:px-8;
+  }
+
+  .panel {
+    @apply rounded-[30px] border border-white/10 bg-white/[0.06] shadow-neo backdrop-blur-2xl;
+  }
+
+  .panel-strong {
+    @apply panel bg-white/[0.08] shadow-glow;
+  }
+
+  .panel-header {
+    @apply flex items-start justify-between gap-4 border-b border-white/10 px-6 py-5;
+  }
+
+  .panel-body {
+    @apply px-6 py-5;
+  }
+
+  .eyebrow {
+    @apply font-display text-[11px] uppercase tracking-[0.35em] text-neon/80;
+  }
+
+  .hud-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-muted;
+  }
+
+  .input-shell {
+    @apply rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-ink outline-none transition focus:border-neon/60 focus:shadow-[0_0_0_1px_rgba(110,255,193,0.25)];
+  }
+
+  .section-label {
+    @apply text-xs uppercase tracking-[0.3em] text-muted;
+  }
+
+  .metric-pill {
+    @apply rounded-full border border-neon/20 bg-neon/10 px-2.5 py-1 text-[11px] font-medium text-neon;
+  }
+
+  .ghost-button {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-ink transition hover:border-neon/40 hover:bg-neon/10;
+  }
+
+  .primary-button {
+    @apply rounded-2xl border border-neon/30 bg-[linear-gradient(135deg,rgba(110,255,193,0.28),rgba(145,102,255,0.28))] px-4 py-2 text-sm font-semibold text-ink shadow-[0_0_24px_rgba(110,255,193,0.18)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
+
+.fc {
+  --fc-border-color: rgba(255, 255, 255, 0.08);
+  --fc-button-bg-color: rgba(255, 255, 255, 0.06);
+  --fc-button-border-color: rgba(255, 255, 255, 0.1);
+  --fc-button-hover-bg-color: rgba(110, 255, 193, 0.18);
+  --fc-button-hover-border-color: rgba(110, 255, 193, 0.24);
+  --fc-button-active-bg-color: rgba(145, 102, 255, 0.22);
+  --fc-button-active-border-color: rgba(145, 102, 255, 0.3);
+  --fc-neutral-bg-color: transparent;
+  --fc-neutral-text-color: rgba(237, 242, 255, 0.7);
+  --fc-page-bg-color: transparent;
+  --fc-event-bg-color: rgba(110, 255, 193, 0.18);
+  --fc-event-border-color: rgba(110, 255, 193, 0.48);
+  --fc-event-text-color: rgb(237, 242, 255);
+  --fc-today-bg-color: rgba(145, 102, 255, 0.12);
+}
+
+.fc .fc-toolbar-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.fc .fc-button {
+  border-radius: 999px;
+  box-shadow: none;
+  padding: 0.55rem 0.85rem;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+}
+
+.fc .fc-scrollgrid,
+.fc .fc-theme-standard td,
+.fc .fc-theme-standard th {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+  color: rgba(237, 242, 255, 0.78);
+}
+
+.fc .fc-daygrid-day-frame,
+.fc .fc-timegrid-slot,
+.fc .fc-timegrid-col-frame {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.fc .fc-daygrid-day.fc-day-today,
+.fc .fc-timegrid-col.fc-day-today {
+  box-shadow: inset 0 0 0 1px rgba(145, 102, 255, 0.24);
+}
+
+.fc .fc-event {
+  border-radius: 14px;
+  padding: 2px 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.fc .fc-highlight {
+  background: rgba(103, 216, 255, 0.16);
+}
