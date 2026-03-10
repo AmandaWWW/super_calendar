@@ -25,7 +25,7 @@ npm run dev
 
 ```bash
 BAILIAN_API_KEY=your_bailian_api_key
-BAILIAN_MODEL=qwen-plus
+BAILIAN_MODEL=deepseek-v3.1
 ```
 
 说明：
@@ -58,7 +58,7 @@ git push -u origin codex/demo-v1
 2. Framework 选择 `Vite`
 3. 设置环境变量：
    - `BAILIAN_API_KEY`
-   - `BAILIAN_MODEL`（可选，默认 `qwen-plus`）
+   - `BAILIAN_MODEL`（可选，默认 `deepseek-v3.1`）
 4. 点击 Deploy
 
 ## Cloudflare 域名切换到 Vercel

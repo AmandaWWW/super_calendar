@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.BAILIAN_API_KEY
-  const model = process.env.BAILIAN_MODEL || 'qwen-plus'
+  const model = process.env.BAILIAN_MODEL || 'deepseek-v3.1'
 
   if (!apiKey) {
     return res.status(500).json({ error: 'Missing BAILIAN_API_KEY' })
