@@ -56,7 +56,6 @@ export function TaskBoardPanel() {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: response.message,
-        countsTowardRound: false,
       })
       setGoalTurns(response.goalTurns)
       setAiStatus(response.nextAiStatus)

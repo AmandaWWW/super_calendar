@@ -14,7 +14,7 @@ const body = Manrope({
 
 export const metadata: Metadata = {
   title: 'Vibe Calendar',
-  description: 'A cyberpunk planning calendar with solar/lunar conversion and AI planning.',
+  description: 'A planning calendar with solar/lunar conversion, AI task generation, and calendar export.',
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

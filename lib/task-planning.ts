@@ -102,7 +102,7 @@ export function buildDefaultTasks({
     },
   ]
 
-  return taskTemplates.map((template, index) => {
+  return taskTemplates.map((template) => {
     const baseDay = addDays(start, template.dayOffset)
     const adjustedDay =
       getDay(baseDay) === 0 ? addDays(baseDay, 1) : getDay(baseDay) === 6 ? addDays(baseDay, 2) : baseDay

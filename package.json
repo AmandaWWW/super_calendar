@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
@@ -16,7 +16,6 @@
     "@fullcalendar/react": "^6.1.20",
     "@fullcalendar/timegrid": "^6.1.20",
     "autoprefixer": "^10.4.27",
-    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "eslint-config-next": "^16.1.6",
     "ics": "^3.8.1",

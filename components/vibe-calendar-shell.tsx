@@ -14,15 +14,9 @@ export function VibeCalendarShell() {
           <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div className="space-y-3">
               <p className="eyebrow">Vibe Calendar</p>
-              <div className="space-y-2">
-                <h1 className="font-display text-4xl uppercase tracking-[0.14em] text-slate-800 md:text-5xl">
-                  Cyber Planner OS
-                </h1>
-                <p className="max-w-3xl text-sm leading-7 text-slate-500 md:text-base">
-                  左侧先选日期并查看阴阳历信息，中间安排一周时间块，右侧再让 AI 帮你拆目标、出任务、导出清单。
-                  整个页面围绕一个日期和一份计划联动，适合快速排学习、项目和交付节奏。
-                </p>
-              </div>
+              <h1 className="font-display text-4xl uppercase tracking-[0.14em] text-slate-800 md:text-5xl">
+                Cyber Planner OS
+              </h1>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="hud-chip">1. 先选日期</span>

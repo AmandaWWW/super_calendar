@@ -39,7 +39,7 @@ export function WeekCalendarBoard() {
         <div>
           <p className="eyebrow">Week Grid</p>
           <h2 className="mt-2 text-lg font-semibold text-slate-800">周视图排程面板</h2>
-          <p className="mt-2 text-sm text-slate-500">拖拽时间网格可以快速新增 block；点现有日程可在下方直接删除；导出 `.ics` 后可导入系统日历。</p>
+          <p className="mt-2 text-sm text-slate-700">拖拽时间网格可以快速新增 block；点现有日程可在下方直接删除；导出 `.ics` 后可导入系统日历。</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <span className="hud-chip">{format(parseISO(selectedDate), 'yyyy.MM.dd')}</span>
@@ -63,7 +63,7 @@ export function WeekCalendarBoard() {
       </div>
 
       <div className="panel-body space-y-5">
-        <div className="grid gap-3 rounded-[24px] border border-white/80 bg-white/90 p-4 text-sm text-slate-500 shadow-2xl shadow-slate-200/60 lg:grid-cols-[1.3fr_1fr]">
+        <div className="grid gap-3 rounded-[24px] border border-white/80 bg-white/90 p-4 text-sm text-slate-700 shadow-2xl shadow-slate-200/60 lg:grid-cols-[1.3fr_1fr]">
           <div>
             <div className="section-label">使用方法</div>
             <p className="mt-2 leading-7">
@@ -93,7 +93,7 @@ export function WeekCalendarBoard() {
                 </button>
               </div>
             ) : (
-              <p className="mt-3 leading-6 text-slate-500">点击周视图中的任意日程，即可在这里执行删除。</p>
+              <p className="mt-3 leading-6 text-slate-700">点击周视图中的任意日程，即可在这里执行删除。</p>
             )}
           </div>
         </div>

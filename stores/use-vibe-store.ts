@@ -1,7 +1,7 @@
 'use client'
 
 import type { DateSelectArg } from '@fullcalendar/core'
-import { addDays, addHours, format } from 'date-fns'
+import { addDays, format } from 'date-fns'
 import { create } from 'zustand'
 import type {
   AiStatus,
@@ -9,11 +9,9 @@ import type {
   ChatMessage,
   ConflictRecord,
   LunarForm,
-  PlanData,
   PlannerForm,
   ProposedTask,
 } from '@/lib/calendar-types'
-import { buildFallbackPlan } from '@/lib/fallback-plan'
 import { getLunarText } from '@/lib/lunar'
 import { detectTaskConflicts, taskToCalendarEvent } from '@/lib/task-planning'
 
@@ -21,7 +19,6 @@ type VibeStore = {
   selectedDate: string
   plannerForm: PlannerForm
   lunarForm: LunarForm
-  plan: PlanData
   events: CalendarEvent[]
   selectedEventId: string | null
   proposedTasks: ProposedTask[]
@@ -35,11 +32,9 @@ type VibeStore = {
   setSelectedDate: (value: string) => void
   setPlannerField: <K extends keyof PlannerForm>(key: K, value: PlannerForm[K]) => void
   setLunarField: <K extends keyof LunarForm>(key: K, value: LunarForm[K]) => void
-  setPlan: (plan: PlanData) => void
   setProposedTasks: (tasks: ProposedTask[]) => void
   removeProposedTask: (taskId: string) => void
   appendChatMessage: (message: ChatMessage) => void
-  clearChatHistory: () => void
   setAiStatus: (value: AiStatus) => void
   setGoalTurns: (value: number) => void
   setLoading: (value: boolean) => void
@@ -56,26 +51,13 @@ const todayLabel = format(today, 'yyyy-MM-dd')
 const todayLunar = getLunarText(todayLabel)
 
 const initialPlannerForm: PlannerForm = {
-  goal: '在 6 周内完成 Vibe Calendar 的 MVP，并上线可用演示版本。',
+  goal: '',
   startDate: todayLabel,
   endDate: format(addDays(today, 42), 'yyyy-MM-dd'),
   weeklyHours: 12,
 }
 
-const initialEvents: CalendarEvent[] = [
-  {
-    id: 'seed-sync',
-    title: 'Product Sync',
-    start: addHours(today, 10).toISOString(),
-    end: addHours(today, 11).toISOString(),
-  },
-  {
-    id: 'seed-build',
-    title: 'Build Block',
-    start: addHours(addDays(today, 1), 14).toISOString(),
-    end: addHours(addDays(today, 1), 16).toISOString(),
-  },
-]
+const initialEvents: CalendarEvent[] = []
 
 export const useVibeStore = create<VibeStore>((set) => ({
   selectedDate: todayLabel,
@@ -86,12 +68,6 @@ export const useVibeStore = create<VibeStore>((set) => ({
     day: todayLunar.day,
     isLeapMonth: false,
   },
-  plan: buildFallbackPlan(
-    initialPlannerForm.goal,
-    initialPlannerForm.startDate,
-    initialPlannerForm.endDate,
-    initialPlannerForm.weeklyHours,
-  ),
   events: initialEvents,
   selectedEventId: null,
   proposedTasks: [],
@@ -130,7 +106,6 @@ export const useVibeStore = create<VibeStore>((set) => ({
         [key]: value,
       },
     })),
-  setPlan: (plan) => set({ plan }),
   setProposedTasks: (proposedTasks) => set({ proposedTasks }),
   removeProposedTask: (taskId) =>
     set((state) => ({
@@ -140,7 +115,6 @@ export const useVibeStore = create<VibeStore>((set) => ({
     set((state) => ({
       chatHistory: [...state.chatHistory, message],
     })),
-  clearChatHistory: () => set({ chatHistory: [], goalTurns: 0, aiStatus: 'idle' }),
   setAiStatus: (aiStatus) => set({ aiStatus }),
   setGoalTurns: (goalTurns) => set({ goalTurns }),
   setLoading: (loading) => set({ loading }),

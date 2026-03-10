@@ -42,7 +42,6 @@ export function AiGoalPanel() {
       id: crypto.randomUUID(),
       role: 'user' as const,
       content: userInput,
-      countsTowardRound: true,
     }
 
     appendChatMessage(userMessage)
@@ -63,7 +62,6 @@ export function AiGoalPanel() {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: response.message,
-        countsTowardRound: false,
       })
       setGoalTurns(response.goalTurns)
       setAiStatus(response.nextAiStatus)
@@ -92,23 +90,14 @@ export function AiGoalPanel() {
       </div>
 
       <div className="panel-body space-y-5">
-        <div className="rounded-[26px] border border-white/80 bg-white/90 p-4 text-sm leading-7 text-slate-500 shadow-2xl shadow-slate-200/60">
-          在这里输入你的项目、学习目标或交付截止时间。AI 会先帮你澄清重点，再生成一组待确认任务；
-          你审核后再决定是否放进日历。
-        </div>
-
-        <div className="space-y-3 rounded-[26px] border border-white/80 bg-white/90 p-4 shadow-2xl shadow-slate-200/60">
-          <div className="flex items-center justify-between gap-3">
-            <p className="section-label">Chat Stream</p>
-            <span className="hud-chip">已计轮次 {goalTurns} / 3</span>
-          </div>
-          <div className="max-h-72 space-y-3 overflow-auto pr-1">
-            {chatHistory.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-5 text-sm text-slate-500">
-                先输入你的项目或学习目标，例如“3 天内做出一个可上线的 AI 日历 Demo”。
-              </div>
-            ) : (
-              chatHistory.map((message) => (
+        {chatHistory.length > 0 ? (
+          <div className="space-y-3 rounded-[26px] border border-white/80 bg-white/90 p-4 shadow-2xl shadow-slate-200/60">
+            <div className="flex items-center justify-between gap-3">
+              <p className="section-label">Chat Stream</p>
+              <span className="hud-chip">已计轮次 {goalTurns} / 3</span>
+            </div>
+            <div className="max-h-72 space-y-3 overflow-auto pr-1">
+              {chatHistory.map((message) => (
                 <div
                   key={message.id}
                   className={`rounded-[22px] px-4 py-3 text-sm leading-6 ${
@@ -122,10 +111,10 @@ export function AiGoalPanel() {
                   </div>
                   {message.content}
                 </div>
-              ))
-            )}
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <div className="space-y-3">
           <p className="section-label">Prompt Input</p>
@@ -178,7 +167,10 @@ export function AiGoalPanel() {
 
         <div className="flex items-center justify-between gap-4 rounded-[26px] border border-white/80 bg-white/90 px-4 py-3 text-sm text-slate-500 shadow-2xl shadow-slate-200/60">
           <span>{statusText}</span>
-          <span className="hud-chip">{aiStatus === 'clarifying' ? '需要补充信息' : aiStatus === 'generating' ? '已生成草案' : '准备中'}</span>
+          <div className="flex items-center gap-2">
+            <span className="hud-chip">已计轮次 {goalTurns} / 3</span>
+            <span className="hud-chip">{aiStatus === 'clarifying' ? '需要补充信息' : aiStatus === 'generating' ? '已生成草案' : '准备中'}</span>
+          </div>
         </div>
 
         {error ? <p className="text-sm text-rose-500">{error}</p> : null}

@@ -1,26 +1,5 @@
 import type { EventInput } from '@fullcalendar/core'
 
-export type PlanItem = {
-  title: string
-  start: string
-  end: string
-  hours: number
-  note: string
-}
-
-export type DailyHint = {
-  date: string
-  lunar: string
-  tip: string
-}
-
-export type PlanData = {
-  summary: string
-  stages: PlanItem[]
-  daily: DailyHint[]
-  from: 'ai' | 'fallback'
-}
-
 export type PlannerForm = {
   goal: string
   startDate: string
@@ -43,7 +22,6 @@ export type ChatMessage = {
   id: string
   role: ChatRole
   content: string
-  countsTowardRound?: boolean
 }
 
 export type AiStatus = 'idle' | 'analyzing' | 'clarifying' | 'generating'
@@ -70,7 +48,6 @@ export type PlannerApiStatus = 'blocked' | 'clarify' | 'generated'
 export type PlannerApiResponse = {
   status: PlannerApiStatus
   message: string
-  countsTowardRound: boolean
   nextAiStatus: AiStatus
   goalTurns: number
   tasks?: ProposedTask[]

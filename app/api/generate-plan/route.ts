@@ -83,7 +83,6 @@ export async function POST(request: Request) {
     const response: PlannerApiResponse = {
       status: 'blocked',
       message: '本面板专注为您生成日程计划，请告诉我您的具体项目或学习目标。',
-      countsTowardRound: false,
       nextAiStatus: 'idle',
       goalTurns,
     }
@@ -97,7 +96,6 @@ export async function POST(request: Request) {
     const response: PlannerApiResponse = {
       status: 'clarify',
       message: buildClarifyingQuestion(userInput, nextTurns),
-      countsTowardRound: true,
       nextAiStatus: 'clarifying',
       goalTurns: nextTurns,
     }
@@ -121,7 +119,6 @@ export async function POST(request: Request) {
     const response: PlannerApiResponse = {
       status: 'generated',
       message: '未配置大模型密钥，已基于当前上下文生成一份默认可执行计划。',
-      countsTowardRound: true,
       nextAiStatus: 'generating',
       goalTurns: nextTurns,
       tasks: fallbackTasks,
@@ -172,7 +169,6 @@ export async function POST(request: Request) {
       const fallbackResponse: PlannerApiResponse = {
         status: 'generated',
         message: 'AI 接口异常，已使用默认计划填充待确认任务。',
-        countsTowardRound: true,
         nextAiStatus: 'generating',
         goalTurns: nextTurns,
         tasks: fallbackTasks,
@@ -189,7 +185,6 @@ export async function POST(request: Request) {
       const fallbackResponse: PlannerApiResponse = {
         status: 'generated',
         message: 'AI 返回格式异常，已改用默认任务草案。',
-        countsTowardRound: true,
         nextAiStatus: 'generating',
         goalTurns: nextTurns,
         tasks: fallbackTasks,
@@ -203,18 +198,16 @@ export async function POST(request: Request) {
       message: forceGenerate
         ? '已避开当前已知冲突时段重新生成任务草案，请确认后再应用到日历。'
         : '已生成一组待确认任务，请先在任务看板审核再应用到日历。',
-      countsTowardRound: true,
       nextAiStatus: 'generating',
       goalTurns: nextTurns,
       tasks,
     }
 
     return NextResponse.json(plannerResponse)
-  } catch (error) {
+  } catch {
     const fallbackResponse: PlannerApiResponse = {
       status: 'generated',
       message: '服务端暂时不可用，已根据现有上下文生成默认任务。',
-      countsTowardRound: true,
       nextAiStatus: 'generating',
       goalTurns: nextTurns,
       tasks: fallbackTasks,
