@@ -15,20 +15,20 @@ export function VibeCalendarShell() {
             <div className="space-y-3">
               <p className="eyebrow">Vibe Calendar</p>
               <div className="space-y-2">
-                <h1 className="font-display text-4xl uppercase tracking-[0.14em] text-white md:text-5xl">
+                <h1 className="font-display text-4xl uppercase tracking-[0.14em] text-slate-800 md:text-5xl">
                   Cyber Planner OS
                 </h1>
-                <p className="max-w-3xl text-sm leading-7 text-muted md:text-base">
-                  阴阳历转换、周视图排程、AI 目标规划被重组进同一张控制台。当前这一版先完成框架升级、
-                  主题、三栏骨架和基础功能迁移，下一步再把跨面板状态机和冲突检测补上。
+                <p className="max-w-3xl text-sm leading-7 text-slate-500 md:text-base">
+                  左侧先选日期并查看阴阳历信息，中间安排一周时间块，右侧再让 AI 帮你拆目标、出任务、导出清单。
+                  整个页面围绕一个日期和一份计划联动，适合快速排学习、项目和交付节奏。
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="hud-chip">Next.js App Router</span>
-              <span className="hud-chip">FullCalendar</span>
-              <span className="hud-chip">Zustand</span>
-              <span className="hud-chip">Neo-Skeuomorphic Dark UI</span>
+              <span className="hud-chip">1. 先选日期</span>
+              <span className="hud-chip">2. 再生成任务</span>
+              <span className="hud-chip">3. 应用到周历</span>
+              <span className="hud-chip">4. 一键导出</span>
             </div>
           </div>
         </header>

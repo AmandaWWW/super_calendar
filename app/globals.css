@@ -3,26 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --color-base: 6 10 20;
-  --color-surface: 14 20 36;
-  --color-panel: 18 24 44;
-  --color-ink: 237 242 255;
-  --color-muted: 151 165 192;
-  --color-neon: 110 255 193;
-  --color-ultraviolet: 145 102 255;
-  --color-cyan: 103 216 255;
+  --color-base: 250 252 255;
+  --color-surface: 255 255 255;
+  --color-panel: 255 255 255;
+  --color-ink: 15 23 42;
+  --color-muted: 100 116 139;
+  --color-neon: 163 230 53;
+  --color-ultraviolet: 129 140 248;
+  --color-cyan: 56 189 248;
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  @apply min-h-screen bg-hero-radial text-ink;
+  @apply min-h-screen bg-gradient-to-br from-lime-100/50 via-blue-50 to-purple-50 text-ink;
 }
 
 * {
-  @apply border-white/10;
+  @apply border-slate-100;
 }
 
 @layer components {
@@ -35,8 +35,8 @@ body {
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(110, 255, 193, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(110, 255, 193, 0.06) 1px, transparent 1px);
+      linear-gradient(rgba(129, 140, 248, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
     background-size: 72px 72px;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 92%);
     pointer-events: none;
@@ -47,15 +47,15 @@ body {
   }
 
   .panel {
-    @apply rounded-[30px] border border-white/10 bg-white/[0.06] shadow-neo backdrop-blur-2xl;
+    @apply rounded-[32px] border border-white/70 bg-white/90 shadow-[0_24px_60px_rgba(148,163,184,0.18)] backdrop-blur-2xl;
   }
 
   .panel-strong {
-    @apply panel bg-white/[0.08] shadow-glow;
+    @apply panel bg-white/95 shadow-[0_28px_70px_rgba(148,163,184,0.22)];
   }
 
   .panel-header {
-    @apply flex items-start justify-between gap-4 border-b border-white/10 px-6 py-5;
+    @apply flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5;
   }
 
   .panel-body {
@@ -63,59 +63,113 @@ body {
   }
 
   .eyebrow {
-    @apply font-display text-[11px] uppercase tracking-[0.35em] text-neon/80;
+    @apply font-display text-[11px] uppercase tracking-[0.35em] text-indigo-500;
   }
 
   .hud-chip {
-    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-muted;
+    @apply inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1 text-xs text-slate-500 shadow-[0_8px_24px_rgba(148,163,184,0.14)];
   }
 
   .input-shell {
-    @apply rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-ink outline-none transition focus:border-neon/60 focus:shadow-[0_0_0_1px_rgba(110,255,193,0.25)];
+    @apply rounded-[22px] border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-purple-100 focus:bg-white focus:ring-2 focus:ring-purple-100 focus:shadow-sm;
   }
 
   .section-label {
-    @apply text-xs uppercase tracking-[0.3em] text-muted;
+    @apply text-xs uppercase tracking-[0.3em] text-slate-400;
   }
 
   .metric-pill {
-    @apply rounded-full border border-neon/20 bg-neon/10 px-2.5 py-1 text-[11px] font-medium text-neon;
+    @apply rounded-full border border-lime-200 bg-lime-100 px-2.5 py-1 text-[11px] font-medium text-lime-800;
   }
 
   .ghost-button {
-    @apply rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-ink transition hover:border-neon/40 hover:bg-neon/10;
+    @apply rounded-[22px] border border-slate-100 bg-white/90 px-4 py-2 text-sm text-slate-700 shadow-[0_10px_26px_rgba(148,163,184,0.14)] transition hover:bg-slate-50 hover:text-slate-900;
   }
 
   .primary-button {
-    @apply rounded-2xl border border-neon/30 bg-[linear-gradient(135deg,rgba(110,255,193,0.28),rgba(145,102,255,0.28))] px-4 py-2 text-sm font-semibold text-ink shadow-[0_0_24px_rgba(110,255,193,0.18)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply rounded-[22px] border border-white/80 bg-[linear-gradient(135deg,rgba(217,249,157,0.95),rgba(224,231,255,0.95),rgba(224,242,254,0.95))] px-4 py-2 text-sm font-semibold text-slate-800 shadow-[0_18px_38px_rgba(148,163,184,0.18)] transition hover:brightness-[1.02] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .sidebar-panel {
+    @apply rounded-[32px] border border-zinc-800 bg-zinc-950 text-white shadow-[0_30px_60px_rgba(9,9,11,0.38)];
+  }
+
+  .sidebar-panel .panel-header {
+    @apply border-zinc-800;
+  }
+
+  .sidebar-panel .eyebrow {
+    @apply text-lime-300;
+  }
+
+  .sidebar-panel .hud-chip {
+    @apply border-zinc-800 bg-zinc-900 text-zinc-400 shadow-none;
+  }
+
+  .sidebar-panel .section-label {
+    @apply text-zinc-400;
+  }
+
+  .sidebar-panel .input-shell {
+    @apply border-zinc-800 bg-zinc-900 text-white focus:border-lime-300 focus:bg-zinc-900 focus:ring-lime-200/20;
   }
 }
 
-.fc {
-  --fc-border-color: rgba(255, 255, 255, 0.08);
-  --fc-button-bg-color: rgba(255, 255, 255, 0.06);
-  --fc-button-border-color: rgba(255, 255, 255, 0.1);
-  --fc-button-hover-bg-color: rgba(110, 255, 193, 0.18);
-  --fc-button-hover-border-color: rgba(110, 255, 193, 0.24);
-  --fc-button-active-bg-color: rgba(145, 102, 255, 0.22);
-  --fc-button-active-border-color: rgba(145, 102, 255, 0.3);
+.theme-week-calendar .fc {
+  --fc-border-color: rgb(241 245 249);
+  --fc-button-bg-color: rgba(255, 255, 255, 0.88);
+  --fc-button-border-color: rgb(241 245 249);
+  --fc-button-hover-bg-color: rgba(224, 231, 255, 0.95);
+  --fc-button-hover-border-color: rgba(199, 210, 254, 0.95);
+  --fc-button-active-bg-color: rgba(217, 249, 157, 0.95);
+  --fc-button-active-border-color: rgba(190, 242, 100, 0.9);
   --fc-neutral-bg-color: transparent;
-  --fc-neutral-text-color: rgba(237, 242, 255, 0.7);
+  --fc-neutral-text-color: rgb(100 116 139);
+  --fc-page-bg-color: white;
+  --fc-event-bg-color: rgba(224, 231, 255, 0.9);
+  --fc-event-border-color: transparent;
+  --fc-event-text-color: rgb(126 34 206);
+  --fc-today-bg-color: rgba(217, 249, 157, 0.4);
+}
+
+.theme-month-calendar .fc {
+  --fc-border-color: rgba(255, 255, 255, 0.08);
+  --fc-button-bg-color: rgba(39, 39, 42, 0.92);
+  --fc-button-border-color: rgba(63, 63, 70, 1);
+  --fc-button-hover-bg-color: rgba(82, 82, 91, 0.95);
+  --fc-button-hover-border-color: rgba(132, 204, 22, 0.32);
+  --fc-button-active-bg-color: rgba(163, 230, 53, 0.18);
+  --fc-button-active-border-color: rgba(190, 242, 100, 0.28);
+  --fc-neutral-bg-color: transparent;
+  --fc-neutral-text-color: rgba(228, 228, 231, 0.72);
   --fc-page-bg-color: transparent;
-  --fc-event-bg-color: rgba(110, 255, 193, 0.18);
-  --fc-event-border-color: rgba(110, 255, 193, 0.48);
-  --fc-event-text-color: rgb(237, 242, 255);
-  --fc-today-bg-color: rgba(145, 102, 255, 0.12);
+  --fc-event-bg-color: rgba(82, 82, 91, 0.95);
+  --fc-event-border-color: transparent;
+  --fc-event-text-color: rgb(244 244 245);
+  --fc-today-bg-color: rgba(163, 230, 53, 0.08);
 }
 
-.fc .fc-toolbar-title {
+.theme-week-calendar .fc .fc-toolbar-title,
+.theme-month-calendar .fc .fc-toolbar-title {
   font-family: var(--font-display);
-  font-size: 1rem;
-  letter-spacing: 0.1em;
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  color: rgb(71 85 105);
 }
 
-.fc .fc-button {
+.theme-week-calendar .fc .fc-toolbar,
+.theme-month-calendar .fc .fc-toolbar {
+  gap: 0.75rem;
+}
+
+.theme-week-calendar .fc .fc-toolbar.fc-header-toolbar,
+.theme-month-calendar .fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 1rem;
+}
+
+.theme-week-calendar .fc .fc-button,
+.theme-month-calendar .fc .fc-button {
   border-radius: 999px;
   box-shadow: none;
   padding: 0.55rem 0.85rem;
@@ -124,36 +178,140 @@ body {
   letter-spacing: 0.16em;
 }
 
-.fc .fc-scrollgrid,
-.fc .fc-theme-standard td,
-.fc .fc-theme-standard th {
-  border-color: rgba(255, 255, 255, 0.08);
+.theme-week-calendar .fc .fc-timegrid-axis-frame,
+.theme-week-calendar .fc .fc-timegrid-slot-label-frame {
+  background: rgba(248, 250, 252, 0.9);
 }
 
-.fc .fc-col-header-cell-cushion,
-.fc .fc-daygrid-day-number,
-.fc .fc-timegrid-axis-cushion,
-.fc .fc-timegrid-slot-label-cushion {
-  color: rgba(237, 242, 255, 0.78);
+.theme-week-calendar .fc .fc-scrollgrid,
+.theme-week-calendar .fc .fc-theme-standard td,
+.theme-week-calendar .fc .fc-theme-standard th {
+  border-color: rgb(241 245 249);
+  background: white;
 }
 
-.fc .fc-daygrid-day-frame,
-.fc .fc-timegrid-slot,
-.fc .fc-timegrid-col-frame {
-  background: rgba(255, 255, 255, 0.02);
+.theme-week-calendar .fc .fc-col-header-cell-cushion,
+.theme-week-calendar .fc .fc-daygrid-day-number,
+.theme-week-calendar .fc .fc-timegrid-axis-cushion,
+.theme-week-calendar .fc .fc-timegrid-slot-label-cushion {
+  color: rgb(71 85 105);
 }
 
-.fc .fc-daygrid-day.fc-day-today,
-.fc .fc-timegrid-col.fc-day-today {
-  box-shadow: inset 0 0 0 1px rgba(145, 102, 255, 0.24);
+.theme-week-calendar .fc .fc-col-header-cell {
+  background: rgba(248, 250, 252, 0.85);
+  backdrop-filter: blur(10px);
 }
 
-.fc .fc-event {
+.theme-week-calendar .fc .fc-daygrid-day-frame,
+.theme-week-calendar .fc .fc-timegrid-slot,
+.theme-week-calendar .fc .fc-timegrid-col-frame {
+  background: white;
+}
+
+.theme-week-calendar .fc .fc-timegrid-slot {
+  height: 3.65rem;
+}
+
+.theme-week-calendar .fc .fc-timegrid-col {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.88));
+}
+
+.theme-week-calendar .fc .fc-timegrid-now-indicator-line {
+  border-color: rgba(132, 204, 22, 0.95);
+  box-shadow: 0 0 0 1px rgba(132, 204, 22, 0.18);
+}
+
+.theme-week-calendar .fc .fc-timegrid-now-indicator-arrow {
+  border-color: rgba(132, 204, 22, 0.95);
+}
+
+.theme-week-calendar .fc .fc-col-header-cell.fc-day-today {
+  background: #d9f99d;
+}
+
+.theme-week-calendar .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+  color: rgb(54 83 20);
+}
+
+.theme-week-calendar .fc .fc-daygrid-day.fc-day-today,
+.theme-week-calendar .fc .fc-timegrid-col.fc-day-today {
+  background: rgba(217, 249, 157, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(217, 249, 157, 0.6);
+}
+
+.theme-week-calendar .fc .fc-event {
   border-radius: 14px;
-  padding: 2px 4px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 5px 7px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(10px);
 }
 
-.fc .fc-highlight {
-  background: rgba(103, 216, 255, 0.16);
+.theme-week-calendar .fc .fc-timegrid-event-harness:nth-child(3n + 1) .fc-event {
+  background: rgba(224, 231, 255, 0.9);
+  color: rgb(126 34 206);
+}
+
+.theme-week-calendar .fc .fc-timegrid-event-harness:nth-child(3n + 2) .fc-event {
+  background: rgba(224, 242, 254, 0.9);
+  color: rgb(3 105 161);
+}
+
+.theme-week-calendar .fc .fc-timegrid-event-harness:nth-child(3n) .fc-event {
+  background: rgba(204, 251, 241, 0.95);
+  color: rgb(15 118 110);
+}
+
+.theme-week-calendar .fc .fc-event-main {
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.theme-week-calendar .fc .fc-timegrid-event-harness {
+  margin-inline: 4px;
+}
+
+.theme-week-calendar .fc .fc-highlight {
+  background: rgba(224, 231, 255, 0.6);
+}
+
+.theme-week-calendar .fc .fc-scrollgrid {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.theme-week-calendar .fc .fc-toolbar-title {
+  color: rgb(51 65 85);
+}
+
+.theme-month-calendar .fc .fc-scrollgrid,
+.theme-month-calendar .fc .fc-theme-standard td,
+.theme-month-calendar .fc .fc-theme-standard th {
+  border-color: rgba(63, 63, 70, 1);
+  background: transparent;
+}
+
+.theme-month-calendar .fc .fc-col-header-cell-cushion,
+.theme-month-calendar .fc .fc-daygrid-day-number,
+.theme-month-calendar .fc .fc-timegrid-axis-cushion,
+.theme-month-calendar .fc .fc-timegrid-slot-label-cushion,
+.theme-month-calendar .fc .fc-toolbar-title {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.theme-month-calendar .fc .fc-col-header-cell {
+  background: rgba(39, 39, 42, 0.95);
+}
+
+.theme-month-calendar .fc .fc-daygrid-day-frame {
+  background: rgba(24, 24, 27, 0.7);
+}
+
+.theme-month-calendar .fc .fc-daygrid-day.fc-day-today {
+  background: rgba(163, 230, 53, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(190, 242, 100, 0.38);
+}
+
+.theme-month-calendar .fc .fc-highlight {
+  background: rgba(163, 230, 53, 0.12);
 }

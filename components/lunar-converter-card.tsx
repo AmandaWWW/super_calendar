@@ -15,7 +15,7 @@ export function LunarConverterCard() {
   )
 
   return (
-    <section className="panel">
+    <section className="panel sidebar-panel">
       <div className="panel-header">
         <div>
           <p className="eyebrow">Converter</p>
@@ -33,7 +33,7 @@ export function LunarConverterCard() {
             value={selectedDate}
             onChange={(event) => setSelectedDate(event.target.value)}
           />
-          <div className="grid gap-3 rounded-[26px] border border-white/10 bg-black/20 p-4 text-sm text-muted">
+          <div className="grid gap-3 rounded-[26px] border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-400">
             <div className="flex items-center justify-between gap-4">
               <span>阳历</span>
               <span className="font-medium text-white">{format(parseISO(selectedDate), 'yyyy.MM.dd')}</span>
@@ -52,7 +52,7 @@ export function LunarConverterCard() {
             </div>
             <div className="flex items-center justify-between gap-4">
               <span>当前联动日期</span>
-              <span className="font-medium text-neon">{selectedDate}</span>
+              <span className="font-medium text-lime-300">{selectedDate}</span>
             </div>
           </div>
         </div>
@@ -66,7 +66,7 @@ export function LunarConverterCard() {
               value={lunarForm.year}
               onChange={(event) => setLunarField('year', Number(event.target.value))}
             />
-            <label className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-muted">
+            <label className="flex items-center justify-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-400">
               <input
                 type="checkbox"
                 checked={lunarForm.isLeapMonth}
@@ -91,7 +91,7 @@ export function LunarConverterCard() {
               onChange={(event) => setLunarField('day', Number(event.target.value))}
             />
           </div>
-          <div className="rounded-[24px] border border-ultraviolet/20 bg-ultraviolet/10 p-4 text-sm text-white">
+          <div className="rounded-[24px] border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-200">
             对应阳历：<span className="font-semibold">{lunarResult}</span>
           </div>
         </div>

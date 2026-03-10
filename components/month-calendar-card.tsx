@@ -18,7 +18,7 @@ export function MonthCalendarCard() {
   }, [selectedDate])
 
   return (
-    <section className="panel">
+    <section className="panel sidebar-panel theme-month-calendar">
       <div className="panel-header">
         <div>
           <p className="eyebrow">Month View</p>

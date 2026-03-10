@@ -23,6 +23,7 @@ type VibeStore = {
   lunarForm: LunarForm
   plan: PlanData
   events: CalendarEvent[]
+  selectedEventId: string | null
   proposedTasks: ProposedTask[]
   chatHistory: ChatMessage[]
   aiStatus: AiStatus
@@ -36,12 +37,15 @@ type VibeStore = {
   setLunarField: <K extends keyof LunarForm>(key: K, value: LunarForm[K]) => void
   setPlan: (plan: PlanData) => void
   setProposedTasks: (tasks: ProposedTask[]) => void
+  removeProposedTask: (taskId: string) => void
   appendChatMessage: (message: ChatMessage) => void
   clearChatHistory: () => void
   setAiStatus: (value: AiStatus) => void
   setGoalTurns: (value: number) => void
   setLoading: (value: boolean) => void
   setError: (value: string) => void
+  setSelectedEventId: (value: string | null) => void
+  removeCalendarEvent: (eventId: string) => void
   closeConflictModal: () => void
   applyProposedTasks: (force?: boolean) => { applied: boolean; conflicts: ConflictRecord[] }
   addCalendarBlock: (arg: DateSelectArg) => void
@@ -89,6 +93,7 @@ export const useVibeStore = create<VibeStore>((set) => ({
     initialPlannerForm.weeklyHours,
   ),
   events: initialEvents,
+  selectedEventId: null,
   proposedTasks: [],
   chatHistory: [],
   aiStatus: 'idle',
@@ -127,6 +132,10 @@ export const useVibeStore = create<VibeStore>((set) => ({
     })),
   setPlan: (plan) => set({ plan }),
   setProposedTasks: (proposedTasks) => set({ proposedTasks }),
+  removeProposedTask: (taskId) =>
+    set((state) => ({
+      proposedTasks: state.proposedTasks.filter((task) => task.id !== taskId),
+    })),
   appendChatMessage: (message) =>
     set((state) => ({
       chatHistory: [...state.chatHistory, message],
@@ -136,6 +145,12 @@ export const useVibeStore = create<VibeStore>((set) => ({
   setGoalTurns: (goalTurns) => set({ goalTurns }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
+  setSelectedEventId: (selectedEventId) => set({ selectedEventId }),
+  removeCalendarEvent: (eventId) =>
+    set((state) => ({
+      events: state.events.filter((event) => String(event.id) !== eventId),
+      selectedEventId: state.selectedEventId === eventId ? null : state.selectedEventId,
+    })),
   closeConflictModal: () => set({ isConflictModalOpen: false, conflicts: [] }),
   applyProposedTasks: (force = false) => {
     const { proposedTasks, events } = useVibeStore.getState()
@@ -153,6 +168,7 @@ export const useVibeStore = create<VibeStore>((set) => ({
     set((state) => ({
       events: [...state.events, ...state.proposedTasks.map(taskToCalendarEvent)],
       proposedTasks: [],
+      selectedEventId: null,
       conflicts: [],
       isConflictModalOpen: false,
     }))
@@ -170,5 +186,6 @@ export const useVibeStore = create<VibeStore>((set) => ({
           end: arg.endStr,
         },
       ],
+      selectedEventId: null,
     })),
 }))
