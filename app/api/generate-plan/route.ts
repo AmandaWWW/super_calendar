@@ -3,7 +3,15 @@ import { addDays, addMonths, addWeeks, differenceInCalendarDays, format, isAfter
 import type { CalendarEvent, ChatMessage, PlannerApiResponse, ProposedTask } from '@/lib/calendar-types'
 import { buildDefaultTasks } from '@/lib/task-planning'
 
+export const runtime = 'nodejs'
+export const maxDuration = 60
+
 const DASHSCOPE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+const DEFAULT_MODEL_TIMEOUT_MS = 55_000
+const parsedTimeoutMs = Number(process.env.PLANNER_MODEL_TIMEOUT_MS ?? DEFAULT_MODEL_TIMEOUT_MS)
+const MODEL_TIMEOUT_MS = Number.isFinite(parsedTimeoutMs)
+  ? Math.min(Math.max(parsedTimeoutMs, 5_000), 110_000)
+  : DEFAULT_MODEL_TIMEOUT_MS
 
 type PlannerRequestBody = {
   userInput?: string
@@ -319,7 +327,7 @@ function buildSystemPrompt(context: PlanningContext) {
 async function callPlannerModel(apiKey: string, model: string, systemPrompt: string, payload: Record<string, unknown>) {
   const response = await fetch(DASHSCOPE_URL, {
     method: 'POST',
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,

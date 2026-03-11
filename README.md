@@ -45,6 +45,7 @@ http://localhost:3000
 ```bash
 BAILIAN_API_KEY=your_bailian_api_key
 BAILIAN_MODEL=deepseek-v3.1
+PLANNER_MODEL_TIMEOUT_MS=55000
 ```
 
 说明：
@@ -106,6 +107,7 @@ git push -u origin codex/demo-v1
 3. 配置环境变量：
    - `BAILIAN_API_KEY`
    - `BAILIAN_MODEL`
+   - `PLANNER_MODEL_TIMEOUT_MS`（可选，默认 `55000`）
 4. 执行部署
 
 ## 备注
