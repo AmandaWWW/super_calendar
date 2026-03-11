@@ -92,7 +92,10 @@ export async function POST(request: Request) {
 
   const nextTurns = forceGenerate ? Math.max(goalTurns, 3) : goalTurns + 1
 
-  if (!forceGenerate && nextTurns < 3 && needsClarification(userInput, chatHistory)) {
+  // Let the first planning turn reach the model. Local clarification only acts as
+  // a fallback from the second turn onward, otherwise users get a canned reply
+  // before the model has a chance to reason over the goal.
+  if (!forceGenerate && goalTurns > 0 && nextTurns < 3 && needsClarification(userInput, chatHistory)) {
     const response: PlannerApiResponse = {
       status: 'clarify',
       message: buildClarifyingQuestion(userInput, nextTurns),
