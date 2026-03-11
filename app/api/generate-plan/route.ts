@@ -5,6 +5,7 @@ import { buildDefaultTasks, expandRecurringTemplateToTasks, type RecurringTempla
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
+export const preferredRegion = ['hkg1', 'sin1']
 
 const DASHSCOPE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
 const DEFAULT_MODEL_TIMEOUT_MS = 55_000
