@@ -24,7 +24,7 @@ export type ChatMessage = {
   content: string
 }
 
-export type AiStatus = 'idle' | 'analyzing' | 'clarifying' | 'generating'
+export type AiStatus = 'idle' | 'analyzing' | 'generating'
 
 export type ProposedTask = {
   id: string
@@ -43,12 +43,10 @@ export type ConflictRecord = {
   endTime: string
 }
 
-export type PlannerApiStatus = 'blocked' | 'clarify' | 'generated'
+export type PlannerApiStatus = 'generated'
 
 export type PlannerApiResponse = {
   status: PlannerApiStatus
   message: string
-  nextAiStatus: AiStatus
-  goalTurns: number
-  tasks?: ProposedTask[]
+  tasks: ProposedTask[]
 }

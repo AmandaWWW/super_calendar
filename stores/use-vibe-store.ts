@@ -24,7 +24,6 @@ type VibeStore = {
   proposedTasks: ProposedTask[]
   chatHistory: ChatMessage[]
   aiStatus: AiStatus
-  goalTurns: number
   loading: boolean
   error: string
   conflicts: ConflictRecord[]
@@ -36,7 +35,6 @@ type VibeStore = {
   removeProposedTask: (taskId: string) => void
   appendChatMessage: (message: ChatMessage) => void
   setAiStatus: (value: AiStatus) => void
-  setGoalTurns: (value: number) => void
   setLoading: (value: boolean) => void
   setError: (value: string) => void
   setSelectedEventId: (value: string | null) => void
@@ -57,8 +55,6 @@ const initialPlannerForm: PlannerForm = {
   weeklyHours: 12,
 }
 
-const initialEvents: CalendarEvent[] = []
-
 export const useVibeStore = create<VibeStore>((set) => ({
   selectedDate: todayLabel,
   plannerForm: initialPlannerForm,
@@ -68,12 +64,11 @@ export const useVibeStore = create<VibeStore>((set) => ({
     day: todayLunar.day,
     isLeapMonth: false,
   },
-  events: initialEvents,
+  events: [],
   selectedEventId: null,
   proposedTasks: [],
   chatHistory: [],
   aiStatus: 'idle',
-  goalTurns: 0,
   loading: false,
   error: '',
   conflicts: [],
@@ -121,7 +116,6 @@ export const useVibeStore = create<VibeStore>((set) => ({
       chatHistory: [...state.chatHistory, message],
     })),
   setAiStatus: (aiStatus) => set({ aiStatus }),
-  setGoalTurns: (goalTurns) => set({ goalTurns }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
   setSelectedEventId: (selectedEventId) => set({ selectedEventId }),

@@ -17,17 +17,14 @@ export function AiGoalPanel() {
     setAiStatus,
     chatHistory,
     appendChatMessage,
-    setGoalTurns,
-    goalTurns,
     setProposedTasks,
   } = useVibeStore()
   const [draft, setDraft] = useState(plannerForm.goal)
 
   const statusText = useMemo(() => {
-    if (loading) return 'AI 正在处理你的输入'
-    if (aiStatus === 'clarifying') return 'AI 正在等待你的补充信息'
-    if (aiStatus === 'generating') return 'AI 已生成待确认任务'
-    return '最多 3 轮输入；第 3 次会强制输出一份默认合理计划'
+    if (loading) return 'AI 正在生成任务草案'
+    if (aiStatus === 'generating') return 'AI 已返回一组待确认任务'
+    return '输入目标后直接由模型生成结构化日程草案'
   }, [aiStatus, loading])
 
   const handleGenerate = async () => {
@@ -55,7 +52,6 @@ export function AiGoalPanel() {
           goal: userInput,
         },
         chatHistory,
-        goalTurns,
       })
 
       appendChatMessage({
@@ -63,13 +59,8 @@ export function AiGoalPanel() {
         role: 'assistant',
         content: response.message,
       })
-      setGoalTurns(response.goalTurns)
-      setAiStatus(response.nextAiStatus)
-
-      if (response.tasks) {
-        setProposedTasks(response.tasks)
-      }
-
+      setAiStatus('generating')
+      setProposedTasks(response.tasks)
       setDraft('')
     } catch (fetchError) {
       setAiStatus('idle')
@@ -94,7 +85,7 @@ export function AiGoalPanel() {
           <div className="space-y-3 rounded-[26px] border border-white/80 bg-white/90 p-4 shadow-2xl shadow-slate-200/60">
             <div className="flex items-center justify-between gap-3">
               <p className="section-label">Chat Stream</p>
-              <span className="hud-chip">已计轮次 {goalTurns} / 3</span>
+              <span className="hud-chip">{chatHistory.length} 条记录</span>
             </div>
             <div className="max-h-72 space-y-3 overflow-auto pr-1">
               {chatHistory.map((message) => (
@@ -122,13 +113,13 @@ export function AiGoalPanel() {
             className="input-shell min-h-32 resize-none"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="描述你的项目目标、完成期限、希望投入的节奏。"
+            placeholder="描述你的目标、周期、频率和限制条件，例如：8天学游泳、每周4次训练、6周备考等。"
           />
         </div>
 
         <div className="flex flex-wrap gap-3">
           <button className="primary-button" type="button" onClick={handleGenerate} disabled={loading}>
-            {loading ? '处理中...' : aiStatus === 'clarifying' ? '提交补充信息' : '开始规划'}
+            {loading ? '处理中...' : '开始规划'}
           </button>
           <button
             className="ghost-button"
@@ -145,8 +136,7 @@ export function AiGoalPanel() {
         <div className="flex items-center justify-between gap-4 rounded-[26px] border border-white/80 bg-white/90 px-4 py-3 text-sm text-slate-500 shadow-2xl shadow-slate-200/60">
           <span>{statusText}</span>
           <div className="flex items-center gap-2">
-            <span className="hud-chip">已计轮次 {goalTurns} / 3</span>
-            <span className="hud-chip">{aiStatus === 'clarifying' ? '需要补充信息' : aiStatus === 'generating' ? '已生成草案' : '准备中'}</span>
+            <span className="hud-chip">{aiStatus === 'generating' ? '已生成草案' : loading ? '生成中' : '准备中'}</span>
           </div>
         </div>
 

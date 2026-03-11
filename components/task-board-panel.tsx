@@ -17,10 +17,8 @@ export function TaskBoardPanel() {
     events,
     plannerForm,
     chatHistory,
-    goalTurns,
     setProposedTasks,
     appendChatMessage,
-    setGoalTurns,
     setAiStatus,
     loading,
     setLoading,
@@ -47,7 +45,6 @@ export function TaskBoardPanel() {
         userInput: plannerForm.goal,
         plannerForm,
         chatHistory,
-        goalTurns,
         forceGenerate: true,
         busySlots: events,
       })
@@ -57,9 +54,8 @@ export function TaskBoardPanel() {
         role: 'assistant',
         content: response.message,
       })
-      setGoalTurns(response.goalTurns)
-      setAiStatus(response.nextAiStatus)
-      setProposedTasks(response.tasks ?? [])
+      setAiStatus('generating')
+      setProposedTasks(response.tasks)
       closeConflictModal()
     } catch (replanError) {
       setError(getErrorMessage(replanError, '重排失败，请稍后重试。'))
@@ -80,7 +76,7 @@ export function TaskBoardPanel() {
 
       <div className="panel-body space-y-6">
         <div className="rounded-[26px] border border-white/80 bg-white/90 p-4 text-sm leading-7 text-slate-500 shadow-2xl shadow-slate-200/60">
-          这里先展示 AI 生成的待确认任务。你可以先删掉不想要的条目、导出清单，再决定是否整体应用到日历。
+          这里先展示模型生成的待确认任务。你可以先删掉不想要的条目、导出清单，再决定是否整体应用到日历。
         </div>
 
         <div className="space-y-3">
@@ -184,7 +180,7 @@ export function TaskBoardPanel() {
             <p className="eyebrow">Conflict Detection</p>
             <h3 className="mt-2 text-xl font-semibold text-slate-800">发现时间冲突</h3>
             <p className="mt-3 text-sm leading-7 text-slate-500">
-              检测到待应用任务与现有日程发生重叠。你可以让 AI 自动避开这些时段重新规划，或者直接强制插入。
+              检测到待应用任务与现有日程发生重叠。你可以让模型避开这些时段重新生成，或者直接强制插入。
             </p>
 
             <div className="mt-5 space-y-3 rounded-[24px] border border-slate-100 bg-slate-50/80 p-4">
@@ -201,7 +197,7 @@ export function TaskBoardPanel() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <button className="primary-button" type="button" onClick={handleReplan} disabled={loading}>
-                让 AI 重排
+                让模型重排
               </button>
               <button className="ghost-button" type="button" onClick={handleForceInsert}>
                 强制覆盖插入

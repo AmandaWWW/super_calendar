@@ -4,7 +4,6 @@ type RequestPlannerParams = {
   userInput: string
   plannerForm: PlannerForm
   chatHistory: ChatMessage[]
-  goalTurns: number
   forceGenerate?: boolean
   busySlots?: CalendarEvent[]
 }
