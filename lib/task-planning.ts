@@ -1,4 +1,16 @@
-import { addDays, addHours, formatISO, getDay, isAfter, isBefore, parseISO, setHours, setMinutes } from 'date-fns'
+import {
+  addDays,
+  addHours,
+  differenceInCalendarDays,
+  formatISO,
+  getDay,
+  isAfter,
+  isBefore,
+  parseISO,
+  setHours,
+  setMinutes,
+  startOfWeek,
+} from 'date-fns'
 import type { CalendarEvent, ConflictRecord, ProposedTask } from '@/lib/calendar-types'
 
 type BusySlot = {
@@ -14,7 +26,41 @@ type DefaultTaskParams = {
   endDate: string
   weeklyHours: number
   busySlots?: BusySlot[]
+  domain?: 'general' | 'fitness'
+  sessionsPerWeek?: number | null
+  hasInjuryConstraint?: boolean
 }
+
+const FITNESS_SESSION_LIBRARY = [
+  {
+    title: '上肢推力量 + 低冲击有氧',
+    description:
+      '热身 10 分钟后进行胸肩三头主项训练，结尾补 15-20 分钟低冲击有氧。保持中等强度，避免任何会诱发髋部疼痛的动作与站姿爆发跳跃。',
+    hour: 18,
+    durationHours: 1.5,
+  },
+  {
+    title: '上肢拉力量 + 核心稳定',
+    description:
+      '先做肩背激活与划船/下拉类主项，再加入核心稳定训练。全程控制动作节奏，避免借力和髋部过大摆动。',
+    hour: 18,
+    durationHours: 1.5,
+  },
+  {
+    title: '肩臂循环 + 低冲击间歇',
+    description:
+      '以肩部、手臂和上背循环训练为主，最后加椭圆机/自行车等低冲击间歇。用心率和主观疲劳控制减脂节奏，不做高冲击跑跳。',
+    hour: 18,
+    durationHours: 1.5,
+  },
+  {
+    title: '核心稳定 + 下肢保护性训练',
+    description:
+      '安排髋周稳定、臀中肌激活、腿后侧轻负荷与拉伸恢复。动作以无痛范围为准，如髋部不适明显加重，应立刻降强度并暂停。',
+    hour: 10,
+    durationHours: 1.25,
+  },
+]
 
 export function taskToCalendarEvent(task: ProposedTask): CalendarEvent {
   return {
@@ -63,13 +109,69 @@ function findAvailableSlot(start: Date, durationHours: number, slots: BusySlot[]
   }
 }
 
+function buildFitnessFallbackTasks({
+  startDate,
+  endDate,
+  sessionsPerWeek = 4,
+  busySlots = [],
+  hasInjuryConstraint = false,
+}: DefaultTaskParams): ProposedTask[] {
+  const start = parseISO(startDate)
+  const end = parseISO(endDate)
+  const tasks: ProposedTask[] = []
+  const weekOffsets = [0, 1, 3, 5]
+  const effectiveSessionsPerWeek = Math.max(2, Math.min(4, sessionsPerWeek ?? 4))
+  const totalWeeks = Math.max(1, Math.floor(differenceInCalendarDays(end, start) / 7) + 1)
+
+  for (let weekIndex = 0; weekIndex < totalWeeks; weekIndex += 1) {
+    const weekBase = addDays(startOfWeek(start, { weekStartsOn: 1 }), weekIndex * 7)
+
+    for (let sessionIndex = 0; sessionIndex < effectiveSessionsPerWeek; sessionIndex += 1) {
+      const template = FITNESS_SESSION_LIBRARY[sessionIndex % FITNESS_SESSION_LIBRARY.length]
+      const day = addDays(weekBase, weekOffsets[sessionIndex % weekOffsets.length])
+
+      if (isBefore(day, start) || isAfter(day, end)) {
+        continue
+      }
+
+      const seedStart = setMinutes(setHours(day, template.hour), 0)
+      const available = findAvailableSlot(seedStart, template.durationHours, busySlots)
+
+      tasks.push({
+        id: crypto.randomUUID(),
+        title: `第 ${weekIndex + 1} 周 · 训练 ${sessionIndex + 1} · ${template.title}`,
+        startTime: formatISO(available.start),
+        endTime: formatISO(available.end),
+        description: `${template.description}${hasInjuryConstraint ? ' 如髋部或相关部位疼痛加重，应立刻降强度或暂停。' : ''}`,
+      })
+    }
+  }
+
+  return tasks
+}
+
 export function buildDefaultTasks({
   goal,
   startDate,
   endDate,
   weeklyHours,
   busySlots = [],
+  domain = 'general',
+  sessionsPerWeek,
+  hasInjuryConstraint = false,
 }: DefaultTaskParams): ProposedTask[] {
+  if (domain === 'fitness') {
+    return buildFitnessFallbackTasks({
+      goal,
+      startDate,
+      endDate,
+      weeklyHours,
+      busySlots,
+      sessionsPerWeek,
+      hasInjuryConstraint,
+    })
+  }
+
   const start = parseISO(startDate)
   const taskTemplates = [
     {
@@ -102,21 +204,23 @@ export function buildDefaultTasks({
     },
   ]
 
-  return taskTemplates.map((template) => {
-    const baseDay = addDays(start, template.dayOffset)
-    const adjustedDay =
-      getDay(baseDay) === 0 ? addDays(baseDay, 1) : getDay(baseDay) === 6 ? addDays(baseDay, 2) : baseDay
-    const seedStart = setMinutes(setHours(adjustedDay, template.hour), 0)
-    const available = findAvailableSlot(seedStart, template.durationHours, busySlots)
+  return taskTemplates
+    .map((template) => {
+      const baseDay = addDays(start, template.dayOffset)
+      const adjustedDay =
+        getDay(baseDay) === 0 ? addDays(baseDay, 1) : getDay(baseDay) === 6 ? addDays(baseDay, 2) : baseDay
+      const seedStart = setMinutes(setHours(adjustedDay, template.hour), 0)
+      const available = findAvailableSlot(seedStart, template.durationHours, busySlots)
 
-    return {
-      id: crypto.randomUUID(),
-      title: template.title,
-      startTime: formatISO(available.start),
-      endTime: formatISO(available.end),
-      description: template.description,
-    }
-  }).filter((task) => parseISO(task.startTime) <= addDays(parseISO(endDate), 1))
+      return {
+        id: crypto.randomUUID(),
+        title: template.title,
+        startTime: formatISO(available.start),
+        endTime: formatISO(available.end),
+        description: template.description,
+      }
+    })
+    .filter((task) => parseISO(task.startTime) <= addDays(parseISO(endDate), 1))
 }
 
 export function detectTaskConflicts(tasks: ProposedTask[], events: CalendarEvent[]): ConflictRecord[] {
