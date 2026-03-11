@@ -1,6 +1,7 @@
 import {
   addDays,
   addHours,
+  addMinutes,
   differenceInCalendarDays,
   formatISO,
   getDay,
@@ -18,6 +19,14 @@ type BusySlot = {
   end: string
   title?: string
   id?: string
+}
+
+export type RecurringTemplateSession = {
+  title: string
+  description: string
+  dayOffset: number
+  startHour: number
+  durationMinutes: number
 }
 
 type DefaultTaskParams = {
@@ -107,6 +116,61 @@ function findAvailableSlot(start: Date, durationHours: number, slots: BusySlot[]
     start,
     end: addHours(start, durationHours),
   }
+}
+
+type ExpandRecurringTemplateParams = {
+  startDate: string
+  endDate: string
+  sessions: RecurringTemplateSession[]
+  busySlots?: BusySlot[]
+  weekStartsOn?: 0 | 1
+}
+
+export function expandRecurringTemplateToTasks({
+  startDate,
+  endDate,
+  sessions,
+  busySlots = [],
+  weekStartsOn = 1,
+}: ExpandRecurringTemplateParams): ProposedTask[] {
+  const start = parseISO(startDate)
+  const end = parseISO(endDate)
+  const tasks: ProposedTask[] = []
+  const totalWeeks = Math.max(1, Math.floor(differenceInCalendarDays(end, start) / 7) + 1)
+  const weekAnchor = startOfWeek(start, { weekStartsOn })
+  const sortedSessions = [...sessions].sort((left, right) => {
+    if (left.dayOffset === right.dayOffset) {
+      return left.startHour - right.startHour
+    }
+
+    return left.dayOffset - right.dayOffset
+  })
+
+  for (let weekIndex = 0; weekIndex < totalWeeks; weekIndex += 1) {
+    const currentWeekStart = addDays(weekAnchor, weekIndex * 7)
+
+    for (let sessionIndex = 0; sessionIndex < sortedSessions.length; sessionIndex += 1) {
+      const session = sortedSessions[sessionIndex]
+      const day = addDays(currentWeekStart, session.dayOffset)
+
+      if (isBefore(day, start) || isAfter(day, end)) {
+        continue
+      }
+
+      const baseStart = setMinutes(setHours(day, session.startHour), 0)
+      const available = findAvailableSlot(baseStart, session.durationMinutes / 60, busySlots)
+
+      tasks.push({
+        id: crypto.randomUUID(),
+        title: `第 ${weekIndex + 1} 周 · ${session.title}`,
+        startTime: formatISO(available.start),
+        endTime: formatISO(addMinutes(available.start, session.durationMinutes)),
+        description: session.description,
+      })
+    }
+  }
+
+  return tasks
 }
 
 function buildFitnessFallbackTasks({

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { addDays, addMonths, addWeeks, differenceInCalendarDays, format, isAfter, parseISO } from 'date-fns'
 import type { CalendarEvent, ChatMessage, PlannerApiResponse, ProposedTask } from '@/lib/calendar-types'
-import { buildDefaultTasks } from '@/lib/task-planning'
+import { buildDefaultTasks, expandRecurringTemplateToTasks, type RecurringTemplateSession } from '@/lib/task-planning'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -52,6 +52,27 @@ function extractJsonArray(text: string) {
   } catch {
     const start = text.indexOf('[')
     const end = text.lastIndexOf(']')
+
+    if (start !== -1 && end !== -1 && end > start) {
+      try {
+        return JSON.parse(text.slice(start, end + 1))
+      } catch {
+        return null
+      }
+    }
+
+    return null
+  }
+}
+
+function extractJsonObject(text: string) {
+  if (!text) return null
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    const start = text.indexOf('{')
+    const end = text.lastIndexOf('}')
 
     if (start !== -1 && end !== -1 && end > start) {
       try {
@@ -249,6 +270,33 @@ function normalizeTasks(tasks: unknown, context: PlanningContext): ProposedTask[
     .sort((left, right) => left.startTime.localeCompare(right.startTime))
 }
 
+function normalizeRecurringTemplate(template: unknown, sessionsPerWeek: number | null) {
+  if (typeof template !== 'object' || template === null) return []
+
+  const sessions = Array.isArray((template as { sessions?: unknown[] }).sessions) ? (template as { sessions: unknown[] }).sessions : []
+
+  return sessions
+    .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+    .map((item) => ({
+      title: typeof item.title === 'string' ? item.title.trim() : '',
+      description: typeof item.description === 'string' ? item.description.trim() : '',
+      dayOffset:
+        typeof item.dayOffset === 'number'
+          ? Math.min(Math.max(Math.round(item.dayOffset), 0), 6)
+          : 0,
+      startHour:
+        typeof item.startHour === 'number'
+          ? Math.min(Math.max(Math.round(item.startHour), 6), 21)
+          : 18,
+      durationMinutes:
+        typeof item.durationMinutes === 'number'
+          ? Math.min(Math.max(Math.round(item.durationMinutes), 30), 180)
+          : 60,
+    }))
+    .filter((item) => item.title && item.description)
+    .slice(0, sessionsPerWeek ? Math.max(1, Math.min(sessionsPerWeek, 7)) : 7)
+}
+
 function planHasEnoughCoverage(tasks: ProposedTask[], context: PlanningContext) {
   if (!tasks.length) return false
 
@@ -271,6 +319,10 @@ function planHasEnoughCoverage(tasks: ProposedTask[], context: PlanningContext) 
   }
 
   return true
+}
+
+function shouldUseRecurringTemplateMode(context: PlanningContext) {
+  return Boolean(context.sessionsPerWeek && context.durationWeeks >= 4 && context.domain !== 'project')
 }
 
 function buildSystemPrompt(context: PlanningContext) {
@@ -324,7 +376,39 @@ function buildSystemPrompt(context: PlanningContext) {
   return rules.join('\n')
 }
 
-async function callPlannerModel(apiKey: string, model: string, systemPrompt: string, payload: Record<string, unknown>) {
+function buildRecurringTemplatePrompt(context: PlanningContext) {
+  const rules = [
+    '你是 Vibe Calendar 的周期计划模板助手。',
+    '你不要直接输出完整日历任务数组。',
+    '你只能输出严格 JSON 对象，不要 markdown，不要解释文字，不要代码块。',
+    '输出 schema：{ "mode":"recurring-template", "sessions":[{ "title":"string", "description":"string", "dayOffset":0-6, "startHour":6-21, "durationMinutes":30-180 }] }',
+    'sessions 表示一个标准周内要重复执行的任务模板，服务端会把它展开到整个周期。',
+    'title 要短而明确，description 只写 1 句执行说明。',
+    `必须输出 ${context.sessionsPerWeek} 个 sessions，分别代表用户每周要执行的 ${context.sessionsPerWeek} 次计划。`,
+    '不要输出购买装备、下载 app、制定计划、搜集资料这类非核心任务，除非用户明确要求。',
+    '如果用户有伤病、疼痛、时间限制或低冲击要求，必须体现在模板内容里。',
+  ]
+
+  if (context.domain === 'fitness') {
+    rules.push('当前是训练目标。sessions 必须是每周重复的训练课表模板，不要输出行政事项。')
+  } else if (context.domain === 'study') {
+    rules.push('当前是学习目标。sessions 必须是每周重复的学习块、刷题块、复盘块、模拟块。')
+  } else if (context.domain === 'errand') {
+    rules.push('当前是跑腿/采购/日常事务目标。sessions 必须是每周重复的出门采购、备餐、整理、补货等动作。')
+  } else {
+    rules.push('当前是一般性的周期计划。sessions 必须是每周重复执行的核心动作模板。')
+  }
+
+  return rules.join('\n')
+}
+
+async function callPlannerModel(
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  payload: Record<string, unknown>,
+  maxTokens = 5000,
+) {
   const response = await fetch(DASHSCOPE_URL, {
     method: 'POST',
     signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
@@ -335,7 +419,7 @@ async function callPlannerModel(apiKey: string, model: string, systemPrompt: str
     body: JSON.stringify({
       model,
       temperature: 0.2,
-      max_tokens: 5000,
+      max_tokens: maxTokens,
       messages: [
         { role: 'system', content: systemPrompt },
         {
@@ -426,6 +510,43 @@ export async function POST(request: Request) {
   }
 
   try {
+    if (shouldUseRecurringTemplateMode(planningContext)) {
+      const templatePrompt = buildRecurringTemplatePrompt(planningContext)
+      const templateResponse = await callPlannerModel(apiKey, model, templatePrompt, basePayload, 1200)
+
+      if (templateResponse.ok) {
+        const templateData = await templateResponse.json()
+        const sessions = normalizeRecurringTemplate(extractJsonObject(templateData?.choices?.[0]?.message?.content || ''), planningContext.sessionsPerWeek)
+
+        if (sessions.length >= Math.max(1, Math.min(planningContext.sessionsPerWeek ?? 1, 7))) {
+          const tasks = expandRecurringTemplateToTasks({
+            startDate: planningContext.effectivePlannerForm.startDate,
+            endDate: planningContext.effectivePlannerForm.endDate,
+            sessions: sessions as RecurringTemplateSession[],
+            busySlots: (busySlots as CalendarEvent[]).map((slot) => ({
+              start: String(slot.start),
+              end: String(slot.end),
+              title: String(slot.title ?? '已有日程'),
+            })),
+          })
+
+          if (planHasEnoughCoverage(tasks, planningContext)) {
+            const plannerResponse: PlannerApiResponse = {
+              status: 'generated',
+              message: forceGenerate
+                ? '已避开当前已知冲突时段重新生成任务草案，请确认后再应用到日历。'
+                : '已生成一组待确认任务，请先在任务看板审核再应用到日历。',
+              nextAiStatus: 'generating',
+              goalTurns: nextTurns,
+              tasks,
+            }
+
+            return NextResponse.json(plannerResponse)
+          }
+        }
+      }
+    }
+
     const firstResponse = await callPlannerModel(apiKey, model, systemPrompt, basePayload)
 
     if (!firstResponse.ok) {
@@ -489,7 +610,15 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(plannerResponse)
-  } catch {
+  } catch (error) {
+    console.error('planner route fallback', {
+      timeoutMs: MODEL_TIMEOUT_MS,
+      domain: planningContext.domain,
+      durationWeeks: planningContext.durationWeeks,
+      sessionsPerWeek: planningContext.sessionsPerWeek,
+      error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+    })
+
     const fallbackResponse: PlannerApiResponse = {
       status: 'generated',
       message: '服务端暂时不可用，已根据现有上下文生成默认任务。',
