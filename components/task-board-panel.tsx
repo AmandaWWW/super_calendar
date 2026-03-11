@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { format, parseISO } from 'date-fns'
+import { formatDateTimeValue } from '@/lib/date-time'
 import { getErrorMessage } from '@/lib/errors'
 import { downloadTasksAsJson, downloadTasksAsMarkdown } from '@/lib/exporters'
 import { requestPlanner } from '@/lib/planner-client'
@@ -150,7 +150,7 @@ export function TaskBoardPanel() {
                         {task.title}
                       </h3>
                       <span className="mt-2 inline-flex rounded-full border border-white/70 bg-white/70 px-3 py-1 text-xs text-slate-500">
-                        {format(parseISO(task.startTime), 'MM.dd HH:mm')}
+                        {formatDateTimeValue(task.startTime, 'MM.dd HH:mm', '时间待确认')}
                       </span>
                     </div>
                     <button
@@ -162,7 +162,7 @@ export function TaskBoardPanel() {
                     </button>
                   </div>
                   <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-400">
-                    {format(parseISO(task.startTime), 'yyyy.MM.dd HH:mm')} -&gt; {format(parseISO(task.endTime), 'HH:mm')}
+                    {formatDateTimeValue(task.startTime, 'yyyy.MM.dd HH:mm', '时间待确认')} -&gt; {formatDateTimeValue(task.endTime, 'HH:mm', '--')}
                   </p>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{task.description}</p>
                 </article>
@@ -189,7 +189,7 @@ export function TaskBoardPanel() {
                   <div className="font-medium text-slate-800">{conflict.taskTitle}</div>
                   <div className="mt-1">冲突对象：{conflict.eventTitle}</div>
                   <div className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">
-                    {format(parseISO(conflict.startTime), 'MM.dd HH:mm')} -&gt; {format(parseISO(conflict.endTime), 'HH:mm')}
+                    {formatDateTimeValue(conflict.startTime, 'MM.dd HH:mm', '时间待确认')} -&gt; {formatDateTimeValue(conflict.endTime, 'HH:mm', '--')}
                   </div>
                 </div>
               ))}

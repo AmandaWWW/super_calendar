@@ -1,5 +1,7 @@
+import { addHours, isAfter } from 'date-fns'
 import { NextResponse } from 'next/server'
 import type { CalendarEvent, ChatMessage, PlannerApiResponse, ProposedTask } from '@/lib/calendar-types'
+import { normalizeDateTimeInput, toDateOrNull } from '@/lib/date-time'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -51,14 +53,31 @@ function normalizeTasks(tasks: unknown): ProposedTask[] {
 
   return tasks
     .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
-    .map((item) => ({
-      id: typeof item.id === 'string' && item.id ? item.id : crypto.randomUUID(),
-      title: typeof item.title === 'string' ? item.title.trim() : '',
-      startTime: typeof item.startTime === 'string' ? item.startTime.trim() : '',
-      endTime: typeof item.endTime === 'string' ? item.endTime.trim() : '',
-      description: typeof item.description === 'string' ? item.description.trim() : '',
-    }))
+    .map((item) => {
+      const startTime = normalizeDateTimeInput(typeof item.startTime === 'string' ? item.startTime.trim() : '')
+      let endTime = normalizeDateTimeInput(typeof item.endTime === 'string' ? item.endTime.trim() : '')
+
+      if (!endTime && startTime) {
+        const start = toDateOrNull(startTime)
+        if (start) {
+          endTime = normalizeDateTimeInput(addHours(start, 1))
+        }
+      }
+
+      return {
+        id: typeof item.id === 'string' && item.id ? item.id : crypto.randomUUID(),
+        title: typeof item.title === 'string' ? item.title.trim() : '',
+        startTime: startTime ?? '',
+        endTime: endTime ?? '',
+        description: typeof item.description === 'string' ? item.description.trim() : '',
+      }
+    })
     .filter((item) => item.title && item.startTime && item.endTime && item.description)
+    .filter((item) => {
+      const start = toDateOrNull(item.startTime)
+      const end = toDateOrNull(item.endTime)
+      return Boolean(start && end && isAfter(end, start))
+    })
     .sort((left, right) => left.startTime.localeCompare(right.startTime))
 }
 
@@ -67,7 +86,7 @@ function buildSystemPrompt() {
     '你是 Vibe Calendar 的排期助手。',
     '你的唯一任务是根据用户输入，生成可以直接放进日历的可执行任务数组。',
     '你只能输出严格 JSON 数组，不要输出 markdown、解释、标题、代码块或额外文字。',
-    '输出 schema：[{"id":"uuid","title":"任务名","startTime":"ISO 8601","endTime":"ISO 8601","description":"执行说明"}]。',
+    '输出 schema：[{"id":"uuid","title":"任务名","startTime":"YYYY-MM-DDTHH:mm:ss+08:00","endTime":"YYYY-MM-DDTHH:mm:ss+08:00","description":"执行说明"}]。',
     '每个任务必须是用户真正要执行的动作，而不是泛泛建议。',
     '优先服从用户自然语言中的目标、时长、频率、节奏、限制和截止时间。',
     '如果用户自然语言中的周期与表单默认周期冲突，以用户自然语言为准。',
@@ -75,8 +94,21 @@ function buildSystemPrompt() {
     '不要因为出现“学习”二字就自动做学习规划；必须按真实目标理解语义，例如“学习游泳”属于训练/技能练习计划，而不是考试复习。',
     '除非用户明确要求，否则不要加入购买装备、下载应用、搜集资料、制定计划这类非核心准备事项。',
     '如果传入了 busySlots，必须避开这些时间段。默认避免安排在 23:00-08:00 和 12:00-13:30。',
-    '长周期目标请覆盖完整周期，不要只排前几天。',
+    '长周期目标请覆盖完整周期，但不要把单个长期计划展开成上百条；通常按周安排 2 到 6 个关键任务即可。',
+    '每条任务都必须给出合法的开始时间和结束时间，且 endTime 必须晚于 startTime。',
     'title 简洁明确；description 只写 1 句具体执行说明。',
+  ].join('\n')
+}
+
+function buildRepairPrompt() {
+  return [
+    '你是 JSON 修复助手。',
+    '你的任务是把上一轮模型输出修正为严格 JSON 数组，不能改变原始规划意图。',
+    '只输出 JSON 数组，不要任何解释。',
+    '输出 schema：[{"id":"uuid","title":"任务名","startTime":"YYYY-MM-DDTHH:mm:ss+08:00","endTime":"YYYY-MM-DDTHH:mm:ss+08:00","description":"执行说明"}]。',
+    '如果时间格式不是合法 ISO 8601，请改写成合法格式。',
+    '如果 endTime 缺失，请在合理范围内补成比 startTime 晚 1 小时。',
+    '如果某些任务完全无法修复时间，就删除这些任务，但尽量保留其余任务。',
   ].join('\n')
 }
 
@@ -103,7 +135,13 @@ function buildUserPayload(
   }
 }
 
-async function callPlannerModel(apiKey: string, model: string, systemPrompt: string, payload: Record<string, unknown>) {
+async function callPlannerModel(
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  payload: Record<string, unknown>,
+  maxTokens = 5000,
+) {
   return fetch(DASHSCOPE_URL, {
     method: 'POST',
     signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
@@ -114,13 +152,36 @@ async function callPlannerModel(apiKey: string, model: string, systemPrompt: str
     body: JSON.stringify({
       model,
       temperature: 0.2,
-      max_tokens: 4000,
+      max_tokens: maxTokens,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: JSON.stringify(payload) },
       ],
     }),
   })
+}
+
+async function repairPlannerOutput(
+  apiKey: string,
+  model: string,
+  rawOutput: string,
+  payload: Record<string, unknown>,
+) {
+  const response = await callPlannerModel(
+    apiKey,
+    model,
+    buildRepairPrompt(),
+    {
+      originalRequest: payload,
+      rawModelOutput: rawOutput,
+    },
+    3500,
+  )
+
+  if (!response.ok) return []
+
+  const data = await response.json()
+  return normalizeTasks(extractJsonArray(data?.choices?.[0]?.message?.content || ''))
 }
 
 function buildGeneratedResponse(message: string, tasks: ProposedTask[]): PlannerApiResponse {
@@ -152,7 +213,7 @@ export async function POST(request: Request) {
   const payload = buildUserPayload(userInput, safePlannerForm, chatHistory, busySlots as CalendarEvent[], forceGenerate)
 
   try {
-    const response = await callPlannerModel(apiKey, model, systemPrompt, payload)
+    const response = await callPlannerModel(apiKey, model, systemPrompt, payload, 5500)
 
     if (!response.ok) {
       const detail = await response.text().catch(() => '')
@@ -161,7 +222,11 @@ export async function POST(request: Request) {
 
     const data = await response.json()
     const content = data?.choices?.[0]?.message?.content || ''
-    const tasks = normalizeTasks(extractJsonArray(content))
+    let tasks = normalizeTasks(extractJsonArray(content))
+
+    if (!tasks.length && content) {
+      tasks = await repairPlannerOutput(apiKey, model, content, payload)
+    }
 
     if (!tasks.length) {
       return NextResponse.json({ error: 'Planner model did not return a valid task array' }, { status: 502 })

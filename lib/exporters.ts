@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns'
+import { formatDateTimeValue, toDateOrNull } from '@/lib/date-time'
 import { createEvents, type EventAttributes } from 'ics'
 import type { CalendarEvent, ProposedTask } from '@/lib/calendar-types'
 
@@ -15,7 +15,11 @@ function downloadBlob(filename: string, content: BlobPart, mimeType: string) {
 }
 
 function toLocalDateArray(value: string | Date) {
-  const date = typeof value === 'string' ? parseISO(value) : value
+  const date = toDateOrNull(value)
+
+  if (!date) {
+    throw new Error('日程时间格式无效，无法导出。')
+  }
 
   return [
     date.getFullYear(),
@@ -31,8 +35,8 @@ export function downloadTasksAsMarkdown(tasks: ProposedTask[]) {
     '# Vibe Calendar Task Board',
     '',
     ...tasks.map((task) => {
-      const start = format(parseISO(task.startTime), 'yyyy-MM-dd HH:mm')
-      const end = format(parseISO(task.endTime), 'HH:mm')
+      const start = formatDateTimeValue(task.startTime, 'yyyy-MM-dd HH:mm', '时间待确认')
+      const end = formatDateTimeValue(task.endTime, 'HH:mm', '--')
       return `- [ ] ${task.title}：${task.description} (${start} - ${end})`
     }),
     '',
