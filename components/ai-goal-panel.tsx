@@ -126,29 +126,6 @@ export function AiGoalPanel() {
           />
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
-          <input
-            className="input-shell"
-            type="date"
-            value={plannerForm.startDate}
-            onChange={(event) => setPlannerField('startDate', event.target.value)}
-          />
-          <input
-            className="input-shell"
-            type="date"
-            value={plannerForm.endDate}
-            onChange={(event) => setPlannerField('endDate', event.target.value)}
-          />
-          <input
-            className="input-shell"
-            type="number"
-            min={1}
-            max={80}
-            value={plannerForm.weeklyHours}
-            onChange={(event) => setPlannerField('weeklyHours', Number(event.target.value))}
-          />
-        </div>
-
         <div className="flex flex-wrap gap-3">
           <button className="primary-button" type="button" onClick={handleGenerate} disabled={loading}>
             {loading ? '处理中...' : aiStatus === 'clarifying' ? '提交补充信息' : '开始规划'}

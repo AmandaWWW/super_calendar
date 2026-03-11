@@ -1,7 +1,7 @@
 'use client'
 
 import type { DateSelectArg } from '@fullcalendar/core'
-import { addDays, format } from 'date-fns'
+import { addDays, format, parseISO } from 'date-fns'
 import { create } from 'zustand'
 import type {
   AiStatus,
@@ -79,11 +79,16 @@ export const useVibeStore = create<VibeStore>((set) => ({
   conflicts: [],
   isConflictModalOpen: false,
   setSelectedDate: (value) =>
-    set(() => {
+    set((state) => {
       const lunar = getLunarText(value)
 
       return {
         selectedDate: value,
+        plannerForm: {
+          ...state.plannerForm,
+          startDate: value,
+          endDate: format(addDays(parseISO(value), 42), 'yyyy-MM-dd'),
+        },
         lunarForm: {
           year: lunar.year,
           month: lunar.month,
